@@ -1,0 +1,12 @@
+project/boot
+target
+.ensime
+.ensime_lucene
+TAGS
+\#*#
+*~
+.#*
+.lib
+.history
+.*.swp
+.idea
