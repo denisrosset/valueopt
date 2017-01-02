@@ -96,6 +96,13 @@ class OptCheck extends FunSuite {
     assert(Opt.empty[Int].filter(_ % 2 == 0).isEmpty)
   }
 
+  test("Opt.filterNot") {
+    def isEven(i: Int): Boolean = (i % 2 == 0)
+    assertResult(1)(Opt(1).filterNot(isEven).get)
+    assert(Opt(2).filterNot(isEven).isEmpty)
+    assert(Opt.empty[Int].filterNot(_ % 2 == 0).isEmpty)
+  }
+
   def parseInt(str: String): Opt[Int] = try {
     Opt(java.lang.Integer.parseInt(str))
   } catch {

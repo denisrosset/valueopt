@@ -24,28 +24,23 @@ package object valueopt {
 
     def iterator: Iterator[A] = macro OptMacros.iterator[A]
 
-    def toOption: Option[A] = if (ref == null) None else Some(ref)
+    def toOption: Option[A] = macro OptMacros.toOption[A]
 
-    def toList: List[A] = if (ref == null) Nil else (ref :: Nil)
+    def toList: List[A] = macro OptMacros.toList[A]
 
-    def collect[B](pf: PartialFunction[A, B]): Opt[B] =
-      if (ref == null) Opt.empty[B]
-      else if (pf.isDefinedAt(ref)) Opt(pf(ref))
-      else Opt.empty[B]
+    def collect[B](pf: PartialFunction[A, B]): Opt[B] = macro OptMacros.collect[A, B]
 
-    def contains[A1 >: A](elem: A1): Boolean = if (ref == null) false else ref == elem
+    def contains[A1 >: A](elem: A1): Boolean = macro OptMacros.contains[A, A1]
 
-    def exists(p: A => Boolean): Boolean = if (ref == null) false else p(ref)
+    def exists(p: A => Boolean): Boolean = macro OptMacros.exists[A]
 
-    def forall(p: A => Boolean): Boolean = if (ref == null) true else p(ref)
+    def forall(p: A => Boolean): Boolean = macro OptMacros.forall[A]
 
-    def foreach[U](f: A => U): Unit = if (ref != null) f(ref)
+    def foreach[U](f: A => U): Unit = macro OptMacros.foreach[A, U]
 
-    def toRight[X](left: => X): Either[X, A] =
-      if (ref == null) Left(left) else Right(ref)
+    def toRight[X](left: => X): Either[X, A] = macro OptMacros.toRight[A, X]
 
-    def toLeft[X](right: => X): Either[A, X] =
-      if (ref == null) Right(right) else Left(ref)
+    def toLeft[X](right: => X): Either[A, X] = macro OptMacros.toLeft[A, X]
 
   }
 
