@@ -18,7 +18,27 @@ The differences of `Opt` with the standard library `Option` are:
 
 - `Opt` always allocates less memory than `Option`. It is a value class that erases to a reference type when storing reference types; for primitive types, it stores their boxed versions and erases to a reference type as well. In constrast, `Some[Int]` allocates an `Some` instance containing a boxed `Int` (which could lead or not to an additional allocation).
 
-- Pattern matching on `Opt` is provided using name-based extractors (to avoid boxing during pattern match), while `Option` is an algebraic datatype represented by `sealed Option` and the final `Some` and `None` types.
+- Pattern matching on `Opt` is provided using name-based extractors, to avoid boxing during pattern match (while `Option` is an algebraic datatype represented by `sealed Option` and the final `Some` and `None` types). Code example:
+
+```scala
+
+def testPatternMatch: Unit = {
+
+	val nonEmptyOpt: Opt[Int] = Opt(2)
+	val emptyOpt: Opt[Int] = Opt.empty[Int]
+	
+    nonEmptyOpt match {
+      case Opt(x) => println("Success!")
+      case _ => ??? // is not taken
+    }
+	
+    emptyOpt match {
+      case Opt(x) => ??? // is not taken
+      case _ => println("Success!")
+    }
+	
+}
+```
 
 - A fully compatible but boxing version of `Opt` is provided for Scala 2.10 due to a compiler bug.
 
