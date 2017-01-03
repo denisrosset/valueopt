@@ -44,11 +44,13 @@ def testPatternMatch: Unit = {
 
 ### Comparable projects
 
-- Most complete alternative, including specialized versions for primitive types: [https://github.com/arosenberger/nalloc](https://github.com/arosenberger/nalloc)
+- Most complete alternative, including specialized versions for primitive types: [arosenberger/nalloc](https://github.com/arosenberger/nalloc)
 
-- [https://github.com/xuwei-k/opt](https://github.com/xuwei-k/opt)
+- [scala-unboxed-option](https://github.com/sjrd/scala-unboxed-option) recovers a type hierarchy similar to `Option`/`Some`/`None`
 
-- [https://github.com/rklaehn/valueclassoption](https://github.com/rklaehn/valueclassoption)
+- [xuwei-k/opt](https://github.com/xuwei-k/opt)
+
+- [rklaehn/valueclassoption](https://github.com/rklaehn/valueclassoption)
 
 ### Caveats
 
