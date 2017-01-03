@@ -4,19 +4,31 @@ Opt is a utility library that provides a fast Option-like type.
 
 The differences of `Opt` with the standard library `Option` are:
 
-- after the code has been reviewed, the `Opt` value class itself will not change, guaranteeing binary compatibility. Methods are implemented using inlining macros,
+- `Opt` is designed to replace `Option` in hot code paths, or for library methods designed to be used in hot code paths.
 
-- `Opt` is designed to replace `Option` in hot code paths,
+- `Opt` is not fully referentially transparent: the `get` method throws a `NullPointerException` 
 
-- `Opt` cannot store `null` by design; `null` is conflated with the `Opt.empty` case,
+- After the project leaves beta status, the core module, including the structure of the `Opt` value class itself will not change, guaranteeing binary compatibility. 
 
-- `Opt` is not designed to play well in functional settings as a type constructor of style `type F[A] = Opt[A]`
+- Methods such as `getOrElse`, `fold`, ... are implemented using macros, and thus produce efficient code that avoids passing closures.
 
-- `Opt` always allocates less memory than `Option`. It is a value class that erases to AnyRef when storing reference types; for primitive types, it stores their boxed versions, but `Opt` itself does not add any supplemental boxing,
+- `Opt` cannot store `null` by design; `null` is conflated with the `Opt.empty` case.
 
-- pattern matching on `Opt` is provided using name-based extractors (to avoid boxing during pattern match), while `Option` is an algebraic datatype represented by `sealed Option` and the final `Some` and `None` types,
+- `Opt` is not designed to be abstracted over (i.e. `type F[A] = Opt[A]`), doing so removes all benefits of the value class. For this purpose, use `Option` instead.
 
-- `Opt` boxes on Scala 2.10 due to the implementation of forwarder methods.
+- `Opt` always allocates less memory than `Option`. It is a value class that erases to a reference type when storing reference types; for primitive types, it stores their boxed versions and erases to a reference type as well. In constrast, `Some[Int]` allocates an `Some` instance containing a boxed `Int` (which could lead or not to an additional allocation).
+
+- Pattern matching on `Opt` is provided using name-based extractors (to avoid boxing during pattern match), while `Option` is an algebraic datatype represented by `sealed Option` and the final `Some` and `None` types.
+
+- A fully compatible but boxing version of `Opt` is provided for Scala 2.10 due to a compiler bug.
+
+### Comparable projects
+
+- Most complete alternative, including specialized versions for primitive types: [https://github.com/arosenberger/nalloc](https://github.com/arosenberger/nalloc)
+
+- [https://github.com/xuwei-k/opt](https://github.com/xuwei-k/opt)
+
+- [https://github.com/rklaehn/valueclassoption](https://github.com/rklaehn/valueclassoption)
 
 ### Caveats
 

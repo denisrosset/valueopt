@@ -6,5 +6,11 @@ trait OptVersions {
 }
 
 object OptVersions {
-  type Base = AnyVal
+
+  trait Base extends Any {
+    self: Opt[_] =>
+    override def equals(other: Any): Boolean = Opt.equalsImpl(self, other)
+    override def hashCode: Int = Opt.hashCodeImpl(self)
+  }
+
 }

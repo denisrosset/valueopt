@@ -206,5 +206,4 @@ if ($lhs.isEmpty) _root_.scala.util.Right($right) else _root_.scala.util.Left($l
 """)
   }
 
-
 }
