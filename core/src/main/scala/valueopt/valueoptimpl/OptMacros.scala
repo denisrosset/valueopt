@@ -21,7 +21,7 @@ object OptMacros {
     val tagA = implicitly[c.WeakTypeTag[A]]
     c.Expr[Opt[A]](q"""
 val $lhs = $lhsArg
-if ($lhs.isEmpty || $f($lhs.ref)) $lhs else _root_.valueopt.Opt.empty[$tagA]
+if ($lhs.isEmpty || $f($lhs.get)) $lhs else _root_.valueopt.Opt.none[$tagA]
 """)
   }
 
@@ -32,7 +32,7 @@ if ($lhs.isEmpty || $f($lhs.ref)) $lhs else _root_.valueopt.Opt.empty[$tagA]
     val tagA = implicitly[c.WeakTypeTag[A]]
     c.Expr[Opt[A]](q"""
 val $lhs = $lhsArg
-if ($lhs.nonEmpty && !$f($lhs.ref)) $lhs else _root_.valueopt.Opt.empty[$tagA]
+if ($lhs.nonEmpty && !$f($lhs.get)) $lhs else _root_.valueopt.Opt.none[$tagA]
 """)
   }
 
@@ -43,7 +43,7 @@ if ($lhs.nonEmpty && !$f($lhs.ref)) $lhs else _root_.valueopt.Opt.empty[$tagA]
     val tagB = implicitly[c.WeakTypeTag[B]]
     c.Expr[Opt[B]](q"""
 val $lhs = $lhsArg
-if ($lhs.nonEmpty) Opt[$tagB]($f($lhs.ref)) else _root_.valueopt.Opt.empty[$tagB]
+if ($lhs.nonEmpty) Opt[$tagB]($f($lhs.get)) else _root_.valueopt.Opt.none[$tagB]
 """)
   }
 
@@ -54,7 +54,7 @@ if ($lhs.nonEmpty) Opt[$tagB]($f($lhs.ref)) else _root_.valueopt.Opt.empty[$tagB
     val tagB = implicitly[c.WeakTypeTag[B]]
     c.Expr[Opt[B]](q"""
 val $lhs = $lhsArg
-if ($lhs.nonEmpty) $f($lhs.ref) else _root_.valueopt.Opt.empty[$tagB]
+if ($lhs.nonEmpty) $f($lhs.get) else _root_.valueopt.Opt.none[$tagB]
 """)
   }
 
@@ -65,7 +65,7 @@ if ($lhs.nonEmpty) $f($lhs.ref) else _root_.valueopt.Opt.empty[$tagB]
     val tagB = implicitly[c.WeakTypeTag[B]]
     c.Expr[Opt[B]](q"""
 val $lhs = $lhsArg
-if ($lhs.nonEmpty) $ev($lhs.ref) else _root_.valueopt.Opt.empty[$tagB]
+if ($lhs.nonEmpty) $ev($lhs.get) else _root_.valueopt.Opt.none[$tagB]
 """)
   }
 
@@ -76,7 +76,7 @@ if ($lhs.nonEmpty) $ev($lhs.ref) else _root_.valueopt.Opt.empty[$tagB]
     val tagB = implicitly[c.WeakTypeTag[B]]
     c.Expr[B](q"""
 val $lhs = $lhsArg
-if ($lhs.nonEmpty) $f($lhs.ref) else $ifEmpty
+if ($lhs.nonEmpty) $f($lhs.get) else $ifEmpty
 """)
   }
 
@@ -87,14 +87,29 @@ if ($lhs.nonEmpty) $f($lhs.ref) else $ifEmpty
     val tagB = implicitly[c.WeakTypeTag[B]]
     c.Expr[B](q"""
 val $lhs = $lhsArg
-if ($lhs.nonEmpty) $lhs.ref else $ifEmpty
+if ($lhs.nonEmpty) $lhs.get else $ifEmpty
+""")
+  }
+
+  def orElse[A, B >: A:c.WeakTypeTag](c: Context)(ifEmpty: c.Expr[Opt[B]]): c.Expr[Opt[B]] = {
+    import c.universe._
+    val lhsArg = findLhs(c)
+    val lhs = freshTermName(c)("lhs$")
+    val tagB = implicitly[c.WeakTypeTag[B]]
+    c.Expr[Opt[B]](q"""
+val $lhs = $lhsArg
+if ($lhs.nonEmpty) $lhs else $ifEmpty
 """)
   }
 
   def orNull[A, B >: A](c: Context)(ev: c.Expr[Null <:< B]): c.Expr[B] = {
     import c.universe._
     val lhsArg = findLhs(c)
-    c.Expr[B](q"$lhsArg.ref")
+    val lhs = freshTermName(c)("lhs$")
+    c.Expr[B](q"""
+val $lhs = $lhsArg
+if ($lhs.nonEmpty) $lhs.get else null
+""")
   }
 
   def iterator[A:c.WeakTypeTag](c: Context): c.Expr[Iterator[A]] = {
@@ -104,7 +119,7 @@ if ($lhs.nonEmpty) $lhs.ref else $ifEmpty
     val tagA = implicitly[c.WeakTypeTag[A]]
     c.Expr[Iterator[A]](q"""
 val $lhs = $lhsArg
-if ($lhs.isEmpty) _root_.scala.collection.Iterator.empty else _root_.scala.collection.Iterator.single[$tagA]($lhs.ref)
+if ($lhs.isEmpty) _root_.scala.collection.Iterator.empty else _root_.scala.collection.Iterator.single[$tagA]($lhs.get)
 """)
   }
 
@@ -115,7 +130,7 @@ if ($lhs.isEmpty) _root_.scala.collection.Iterator.empty else _root_.scala.colle
     val tagA = implicitly[c.WeakTypeTag[A]]
     c.Expr[Option[A]](q"""
 val $lhs = $lhsArg
-if ($lhs.isEmpty) _root_.scala.None else _root_.scala.Some[$tagA]($lhs.ref)
+if ($lhs.isEmpty) _root_.scala.None else _root_.scala.Some[$tagA]($lhs.get)
 """)
   }
 
@@ -127,7 +142,7 @@ if ($lhs.isEmpty) _root_.scala.None else _root_.scala.Some[$tagA]($lhs.ref)
     c.Expr[List[A]](q"""
 val $lhs = $lhsArg
 if ($lhs.isEmpty) _root_.scala.collection.immutable.Nil 
-else _root_.scala.collection.immutable.::[$tagA]($lhs.ref, _root_.scala.collection.immutable.Nil)
+else _root_.scala.collection.immutable.::[$tagA]($lhs.get, _root_.scala.collection.immutable.Nil)
 """)
   }
 
@@ -139,11 +154,11 @@ else _root_.scala.collection.immutable.::[$tagA]($lhs.ref, _root_.scala.collecti
     val tagB = implicitly[c.WeakTypeTag[B]]
     c.Expr[Opt[B]](q"""
 val $lhs = $lhsArg
-if ($lhs.isEmpty) Opt.empty[$tagB]
+if ($lhs.isEmpty) Opt.none[$tagB]
 else {
   val $pfCache = $pf
-  if ($pfCache.isDefinedAt($lhs.ref)) _root_.valueopt.Opt[$tagB]($pfCache($lhs.ref)) 
-  else _root_.valueopt.Opt.empty[$tagB]
+  if ($pfCache.isDefinedAt($lhs.get)) _root_.valueopt.Opt[$tagB]($pfCache($lhs.get))
+  else _root_.valueopt.Opt.none[$tagB]
 }
 """)
   }
@@ -154,7 +169,7 @@ else {
     val lhs = freshTermName(c)("lhs$")
     c.Expr[Boolean](q"""
 val $lhs = $lhsArg
-if ($lhs.isEmpty) false else ($lhs.ref == $elem)
+if ($lhs.isEmpty) false else ($lhs.get == $elem)
 """)
   }
 
@@ -164,7 +179,7 @@ if ($lhs.isEmpty) false else ($lhs.ref == $elem)
     val lhs = freshTermName(c)("lhs$")
     c.Expr[Boolean](q"""
 val $lhs = $lhsArg
-if ($lhs.isEmpty) false else $p($lhs.ref)
+if ($lhs.isEmpty) false else $p($lhs.get)
 """)
   }
 
@@ -174,7 +189,7 @@ if ($lhs.isEmpty) false else $p($lhs.ref)
     val lhs = freshTermName(c)("lhs$")
     c.Expr[Boolean](q"""
 val $lhs = $lhsArg
-if ($lhs.isEmpty) true else $p($lhs.ref)
+if ($lhs.isEmpty) true else $p($lhs.get)
 """)
   }
 
@@ -184,7 +199,7 @@ if ($lhs.isEmpty) true else $p($lhs.ref)
     val lhs = freshTermName(c)("lhs$")
     c.Expr[Unit](q"""
 val $lhs = $lhsArg
-if ($lhs.nonEmpty) $f($lhs.ref)
+if ($lhs.nonEmpty) $f($lhs.get)
 """)
   }
 
@@ -194,7 +209,7 @@ if ($lhs.nonEmpty) $f($lhs.ref)
     val lhs = freshTermName(c)("lhs$")
     c.Expr[Either[X, A]](q"""
 val $lhs = $lhsArg
-if ($lhs.isEmpty) _root_.scala.util.Left($left) else _root_.scala.util.Right($lhs.ref)
+if ($lhs.isEmpty) _root_.scala.util.Left($left) else _root_.scala.util.Right($lhs.get)
 """)
   }
 
@@ -204,7 +219,7 @@ if ($lhs.isEmpty) _root_.scala.util.Left($left) else _root_.scala.util.Right($lh
     val lhs = freshTermName(c)("lhs$")
     c.Expr[Either[A, X]](q"""
 val $lhs = $lhsArg
-if ($lhs.isEmpty) _root_.scala.util.Right($right) else _root_.scala.util.Left($lhs.ref)
+if ($lhs.isEmpty) _root_.scala.util.Right($right) else _root_.scala.util.Left($lhs.get)
 """)
   }
 

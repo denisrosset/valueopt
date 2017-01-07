@@ -1,10 +1,10 @@
 package valueopt.valueoptimpl
 
-import valueopt.Opt
+import valueopt.{Opt, OptNone}
 
 class OptSomeImpl {
 
   def unapply[A](opt: Opt[A]): Option[A] =
-    if (self.isInstanceOf[OptNoneImpl]) None else Some(opt.asInstanceOf[A])
+    if (opt.isInstanceOf[OptNone.type]) None else Some(opt.asInstanceOf[A])
 
 }

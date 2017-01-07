@@ -1,4 +1,4 @@
-## Opt - AnyVal Option-like type
+After 1.0 the pace of change will slow - thats the stated plan IIUC..## Opt - AnyVal Option-like type
 
 Opt is a utility library that provides a fast Option-like type.
 
@@ -12,9 +12,7 @@ The differences of `Opt` with the standard library `Option` are:
 
 - Methods such as `getOrElse`, `fold`, ... are implemented using macros, and thus produce efficient code that avoids passing closures.
 
-- `Opt` cannot store `null` by design; `null` is conflated with the `Opt.empty` case.
-
-- `Opt` is not designed to be abstracted over (i.e. `type F[A] = Opt[A]`), doing so removes all benefits of the value class. For this purpose, use `Option` instead.
+- `Opt` *can* store `null` by using a trick.
 
 - `Opt` always allocates less memory than `Option`. It is a value class that erases to a reference type when storing reference types; for primitive types, it stores their boxed versions and erases to a reference type as well. In constrast, `Some[Int]` allocates an `Some` instance containing a boxed `Int` (which could lead or not to an additional allocation).
 
@@ -25,28 +23,26 @@ The differences of `Opt` with the standard library `Option` are:
 def testPatternMatch: Unit = {
 
 	val nonEmptyOpt: Opt[Int] = Opt(2)
-	val emptyOpt: Opt[Int] = Opt.empty[Int]
+	val emptyOpt: Opt[Int] = Opt.none[Int] // or OptNone. Opt.none[A] is of type Opt[A]
 	
     nonEmptyOpt match {
-      case Opt(x) => println("Success!")
-      case _ => ??? // is not taken
+      case OptSome(x) => println("Success!")
+      case OptNone => ??? // is not taken
     }
 	
     emptyOpt match {
-      case Opt(x) => ??? // is not taken
-      case _ => println("Success!")
+      case OptSome(x) => ??? // is not taken
+      case OptNone => println("Success!")
     }
 	
 }
 ```
 
-- A fully compatible but boxing version of `Opt` is provided for Scala 2.10 due to a compiler bug.
-
 ### Comparable projects
 
-- Most complete alternative, including specialized versions for primitive types: [arosenberger/nalloc](https://github.com/arosenberger/nalloc)
+- [scala-unboxed-option](https://github.com/sjrd/scala-unboxed-option) is our main source of inspiration
 
-- [scala-unboxed-option](https://github.com/sjrd/scala-unboxed-option) recovers a type hierarchy similar to `Option`/`Some`/`None`
+- Most complete alternative, including specialized versions for primitive types: [arosenberger/nalloc](https://github.com/arosenberger/nalloc)
 
 - [xuwei-k/opt](https://github.com/xuwei-k/opt)
 

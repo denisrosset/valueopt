@@ -6,7 +6,7 @@ import valueopt.OptNone
 
 private[valueopt] class Types {
 
-  type Opt[+A] >: OptNoneImpl <: AnyRef
+  type Opt[+A] >: OptNone.type <: AnyRef
 
   type OptSome[+A] <: Opt[A]
 

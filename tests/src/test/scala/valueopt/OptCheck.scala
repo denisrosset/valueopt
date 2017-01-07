@@ -1,8 +1,8 @@
 package valueopt
 
-import org.scalatest.FunSuite
-
 import scala.util.{Left, Right}
+
+import org.scalatest.FunSuite
 
 //import spire.algebra.Eq
 
@@ -17,47 +17,47 @@ class OptCheck extends FunSuite {
   def parseInt(str: String): Opt[Int] = try {
     Opt(java.lang.Integer.parseInt(str))
   } catch {
-    case e: NumberFormatException => Opt.empty[Int]
+    case e: NumberFormatException => Opt.none[Int]
   }
 
   def isEven(i: Int): Boolean = (i % 2) == 0
 
-  test("Opt.empty") {
-    assert(Opt.empty[Int].isEmpty)
-    assert(Opt.empty[String].isEmpty)
-    assert(!Opt.empty[Int].nonEmpty)
-    assert(!Opt.empty[String].nonEmpty)
-    assert(!Opt.empty[Int].isDefined)
-    assert(!Opt.empty[String].isDefined)
+  test("OptNone") {
+    assert(Opt.none[Int].isEmpty)
+    assert(Opt.none[String].isEmpty)
+    assert(!Opt.none[Int].nonEmpty)
+    assert(!Opt.none[String].nonEmpty)
+    assert(!Opt.none[Int].isDefined)
+    assert(!Opt.none[String].isDefined)
 
-    assertResult("Opt.empty") { Opt.empty[Int].toString }
-    assertResult("Opt.empty") { Opt.empty[String].toString }
+    assertResult("OptNone") { Opt.none[Int].toString }
+    assertResult("OptNone") { Opt.none[String].toString }
 
-    assertResult("Opt.empty") { customToString(Opt.empty[Int]) }
-    assertResult("Opt.empty") { customToString(Opt.empty[String]) }
-    assertResult("Opt.empty") { intToString(Opt.empty[Int]) }
-    assertResult("Opt.empty") { strToString(Opt.empty[String]) }
+    assertResult("OptNone") { customToString(Opt.none[Int]) }
+    assertResult("OptNone") { customToString(Opt.none[String]) }
+    assertResult("OptNone") { intToString(Opt.none[Int]) }
+    assertResult("OptNone") { strToString(Opt.none[String]) }
 
-    intercept[Exception] { Opt.empty[Int].get }
-    intercept[Exception] { Opt.empty[String].get }
+    intercept[Exception] { Opt.none[Int].get }
+    intercept[Exception] { Opt.none[String].get }
   }
 
   test("Opt.== / !=") {
     assert(Opt(1) != Opt(3))
-    assert(Opt.empty[Int] == Opt.empty[Int])
-    assert(Opt.empty[Int] != Opt(0))
-    assert(Opt(0) != Opt.empty[Int])
-    assert(Opt(1) != Opt.empty[Int])
+    assert(Opt.none[Int] == Opt.none[Int])
+    assert(Opt.none[Int] != Opt(0))
+    assert(Opt(0) != Opt.none[Int])
+    assert(Opt(1) != Opt.none[Int])
     assert(Opt(1) == Opt(1))
     assert(Opt("a") == Opt("a"))
     assert(Opt("a") != Opt("b"))
-    assert(Opt("a") != Opt.empty[String])
-    assert(Opt.empty[String] != Opt("a"))
+    assert(Opt("a") != Opt.none[String])
+    assert(Opt.none[String] != Opt("a"))
   }
 
   test("Opt.hashCode") {
     assert(Opt(1).hashCode == 1.hashCode)
-    Opt.empty.hashCode // should not throw
+    Opt.none.hashCode // should not throw
     assert(Opt("str").hashCode == "str".hashCode)
   }
 
@@ -80,13 +80,13 @@ class OptCheck extends FunSuite {
     assert(!Opt(1).isEmpty)
     assert(!Opt("abc").isEmpty)
 
-    assertResult("Opt(1)") { Opt(1).toString }
-    assertResult("Opt(abc)") { Opt("abc").toString }
+    assertResult("1") { Opt(1).toString }
+    assertResult("abc") { Opt("abc").toString }
 
-    assertResult("Opt(1)") { customToString(Opt(1)) }
-    assertResult("Opt(abc)") { customToString(Opt("abc")) }
-    assertResult("Opt(1)") { intToString(Opt(1)) }
-    assertResult("Opt(abc)") { strToString(Opt("abc")) }
+    assertResult("1") { customToString(Opt(1)) }
+    assertResult("abc") { customToString(Opt("abc")) }
+    assertResult("1") { intToString(Opt(1)) }
+    assertResult("abc") { strToString(Opt("abc")) }
 
     assertResult(1) { Opt(1).get }
     assertResult("abc") { Opt("abc").get }
@@ -112,11 +112,11 @@ class OptCheck extends FunSuite {
 
   test("Name-based extractor") {
     Opt(2) match {
-      case Opt(x) => // success
+      case OptSome(x) => // success
       case _ => fail()
     }
-    Opt.empty[Int] match {
-      case Opt(x) => fail()
+    Opt.none[Int] match {
+      case OptSome(x) => fail()
       case _ => // success
     }
   }
@@ -125,14 +125,14 @@ class OptCheck extends FunSuite {
     def isEven(i: Int): Boolean = (i % 2 == 0)
     assert(Opt(1).filter(isEven).isEmpty)
     assertResult(2)(Opt(2).filter(isEven).get)
-    assert(Opt.empty[Int].filter(_ % 2 == 0).isEmpty)
+    assert(Opt.none[Int].filter(_ % 2 == 0).isEmpty)
   }
 
   test("Opt.filterNot") {
     def isEven(i: Int): Boolean = (i % 2 == 0)
     assertResult(1)(Opt(1).filterNot(isEven).get)
     assert(Opt(2).filterNot(isEven).isEmpty)
-    assert(Opt.empty[Int].filterNot(_ % 2 == 0).isEmpty)
+    assert(Opt.none[Int].filterNot(_ % 2 == 0).isEmpty)
   }
 
 
@@ -140,57 +140,57 @@ class OptCheck extends FunSuite {
     assertResult(Opt(2))(Opt(1).map(_ * 2))
     assertResult(Opt("2"))(Opt(2).map(_.toString))
     assertResult(Opt(2))(parseInt("2"))
-    assertResult(Opt.empty[Int])(parseInt("abc"))
+    assertResult(Opt.none[Int])(parseInt("abc"))
   }
 
   test("Opt.flatMap") {
     assertResult(Opt(2))(Opt("2").flatMap(parseInt))
-    assertResult(Opt.empty[Int])(Opt("abc").flatMap(parseInt))
-    assertResult(Opt.empty[Int])(Opt.empty[String].flatMap(parseInt))
+    assertResult(Opt.none[Int])(Opt("abc").flatMap(parseInt))
+    assertResult(Opt.none[Int])(Opt.none[String].flatMap(parseInt))
   }
 
   test("Opt.flatten") {
     assertResult(Opt(2))(Opt(Opt(2)).flatten)
-    assertResult(Opt.empty[Int])(Opt(Opt.empty[Int]).flatten)
+    assertResult(Opt.none[Int])(Opt(Opt.none[Int]).flatten)
   }
 
   test("Opt.fold") {
     assertResult(2)(Opt(1).fold(0)(_ * 2))
-    assertResult(0)(Opt.empty[Int].fold(0)(_ * 2))
+    assertResult(0)(Opt.none[Int].fold(0)(_ * 2))
     assertResult("abcabc")(Opt("abc").fold("")(_ * 2))
-    assertResult("")(Opt.empty[String].fold("")(_ * 2))
+    assertResult("")(Opt.none[String].fold("")(_ * 2))
   }
 
   test("Opt.getOrElse") {
     assertResult(2)(Opt(2).getOrElse(0))
-    assertResult(0)(Opt.empty[Int].getOrElse(0))
+    assertResult(0)(Opt.none[Int].getOrElse(0))
     assertResult("abc")(Opt("abc").getOrElse(""))
     assertResult("abc")(Opt("abc").getOrElse(sys.error("Should not be executed")))
-    assertResult("")(Opt.empty[String].getOrElse(""))
+    assertResult("")(Opt.none[String].getOrElse(""))
   }
 
   test("Opt.orNull") {
-    assertResult(null)(Opt.empty[String].orNull)
+    assertResult(null)(Opt.none[String].orNull)
     assertResult("str")(Opt("str").orNull)
   }
 
   test("Opt.iterator") {
-    assert(!Opt.empty[Int].iterator.hasNext)
+    assert(!Opt.none[Int].iterator.hasNext)
     assertResult(2)(Opt(2).iterator.next)
   }
 
   test("Opt.toOption") {
     assertResult(Some(2))(Opt(2).toOption)
-    assertResult(None)(Opt.empty[Int].toOption)
+    assertResult(None)(Opt.none[Int].toOption)
     assertResult(Some("abc"))(Opt("abc").toOption)
-    assertResult(None)(Opt.empty[String].toOption)
+    assertResult(None)(Opt.none[String].toOption)
   }
 
   test("Opt.toList") {
     assertResult(List(2))(Opt(2).toList)
     assertResult(List("str"))(Opt("str").toList)
-    assertResult(Nil)(Opt.empty[Int].toList)
-    assertResult(Nil)(Opt.empty[String].toList)
+    assertResult(Nil)(Opt.none[Int].toList)
+    assertResult(Nil)(Opt.none[String].toList)
   }
 
   test("Opt.collect") {
@@ -198,13 +198,13 @@ class OptCheck extends FunSuite {
       case str if str.nonEmpty => str.length
     }
 
-    assertResult(Opt.empty[Int])(Opt("").collect(nonEmptyLength))
-    assertResult(Opt.empty[Int])(Opt.empty[String].collect(nonEmptyLength))
+    assertResult(Opt.none[Int])(Opt("").collect(nonEmptyLength))
+    assertResult(Opt.none[Int])(Opt.none[String].collect(nonEmptyLength))
     assertResult(Opt(4))(Opt("test").collect(nonEmptyLength))
   }
 
   test("Opt.contains") {
-    assert(!Opt.empty[String].contains(null))
+    assert(!Opt.none[String].contains(null))
     assert(Opt("test").contains("test"))
     assert(!Opt("test1").contains("test"))
     assert(!Opt("test").contains(null))
@@ -213,13 +213,13 @@ class OptCheck extends FunSuite {
   test("Opt.exists") {
     assert(Opt(2).exists(isEven))
     assert(!Opt(3).exists(isEven))
-    assert(!Opt.empty[Int].exists(isEven))
+    assert(!Opt.none[Int].exists(isEven))
   }
 
   test("Opt.forall") {
     assert(Opt(2).forall(isEven))
     assert(!Opt(3).forall(isEven))
-    assert(Opt.empty[Int].forall(isEven))
+    assert(Opt.none[Int].forall(isEven))
   }
 
   test("Opt.foreach") {
@@ -234,18 +234,18 @@ class OptCheck extends FunSuite {
     assert(v == 0)
 
     v = -1
-    Opt.empty[Int].foreach( v = _ )
+    Opt.none[Int].foreach( v = _ )
     assert(v == -1)
   }
 
   test("Opt.toRight") {
     assertResult(Right(2))(Opt(2).toRight("left"))
-    assertResult(Left("left"))(Opt.empty[Int].toRight("left"))
+    assertResult(Left("left"))(Opt.none[Int].toRight("left"))
   }
 
   test("Opt.toLeft") {
     assertResult(Left(2))(Opt(2).toLeft("right"))
-    assertResult(Right("right"))(Opt.empty[Int].toLeft("right"))
+    assertResult(Right("right"))(Opt.none[Int].toLeft("right"))
   }
 
 }
