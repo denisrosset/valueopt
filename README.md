@@ -1,4 +1,4 @@
-After 1.0 the pace of change will slow - thats the stated plan IIUC..## Opt - AnyVal Option-like type
+## Opt - AnyVal Option-like type
 
 Opt is a utility library that provides a fast Option-like type.
 
