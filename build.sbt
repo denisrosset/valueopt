@@ -21,16 +21,16 @@ lazy val valueoptJVM = project.in(file(".optJVM"))
   .settings(optSettings)
   .settings(unidocSettings)
   .settings(noPublishSettings)
-  .aggregate(macrosJVM, coreJVM, testsJVM)
-  .dependsOn(macrosJVM, coreJVM, testsJVM)
+  .aggregate(coreJVM, testsJVM)
+  .dependsOn(coreJVM, testsJVM)
 
 lazy val valueoptJS = project.in(file(".optJS"))
   .settings(moduleName := "valueopt-aggregate")
   .settings(optSettings)
   .settings(unidocSettings)
   .settings(noPublishSettings)
-  .aggregate(macrosJS, coreJS, testsJS)
-  .dependsOn(macrosJS, coreJS, testsJS)
+  .aggregate(coreJS, testsJS)
+  .dependsOn( coreJS, testsJS)
   .enablePlugins(ScalaJSPlugin)
 
 lazy val core = crossProject.crossType(CrossType.Pure)
@@ -45,19 +45,6 @@ lazy val core = crossProject.crossType(CrossType.Pure)
 lazy val coreJVM = core.jvm
 lazy val coreJS = core.js
 
-lazy val macros = crossProject.crossType(CrossType.Pure)
-  .settings(moduleName := "valueopt-macros")
-  .settings(optSettings:_*)
-  .settings(scalaCheckSettings:_*)
-  .settings(scalaTestSettings:_*)
-  .settings(crossVersionSharedSources:_*)
-  .jvmSettings(commonJvmSettings:_*)
-  .jsSettings(commonJsSettings:_*)
-  .dependsOn(core)
-
-lazy val macrosJVM = macros.jvm
-lazy val macrosJS = macros.js
-
 lazy val tests = crossProject.crossType(CrossType.Pure)
   .settings(moduleName := "valueopt-tests")
   .settings(optSettings:_*)
@@ -65,16 +52,16 @@ lazy val tests = crossProject.crossType(CrossType.Pure)
   .settings(noPublishSettings:_*)
   .jvmSettings(commonJvmSettings:_*)
   .jsSettings(commonJsSettings:_*)
-  .dependsOn(core, macros)
+  .dependsOn(core)
 
 lazy val testsJVM = tests.jvm
 lazy val testsJS = tests.js
 
 // General settings
 
-addCommandAlias("validateJVM", ";coreJVM/scalastyle;macrosJVM/test;coreJVM/test;testsJVM/test")
+addCommandAlias("validateJVM", ";coreJVM/scalastyle;coreJVM/test;testsJVM/test")
 
-addCommandAlias("validateJS", ";macrosJS/test;coreJS/test;testsJS/test")
+addCommandAlias("validateJS", ";coreJS/test;testsJS/test")
 
 addCommandAlias("validate", ";validateJVM;validateJS")
 
@@ -103,7 +90,7 @@ lazy val commonJsSettings = Seq(
 lazy val commonJvmSettings = Seq(
   // -optimize has no effect in scala-js other than slowing down the build
   scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, scalaMajor)) if scalaMajor <= 11 => Seq("-optimize")
+    case Some((2, scalaMajor)) if scalaMajor <= 12 => Seq("-optimize") // remove 2.12 ?
     case _ => Seq.empty
   }),
   testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDF")
@@ -140,8 +127,7 @@ lazy val publishSettings = Seq(
 lazy val scoverageSettings = Seq(
   coverageMinimum := 40,
   coverageFailOnMinimum := false,
-  coverageHighlighting := scalaBinaryVersion.value != "2.10",
-  coverageExcludedPackages := "opt\\.macros\\..*"
+  coverageHighlighting := scalaBinaryVersion.value != "2.10"
 )
 
 // Project's settings

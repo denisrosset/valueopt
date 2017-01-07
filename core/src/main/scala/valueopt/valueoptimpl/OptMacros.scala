@@ -1,8 +1,10 @@
-package valueopt
+package valueopt.valueoptimpl
+
+import valueopt.Opt
 
 object OptMacros {
 
-  import OptMacrosCompat._
+  import valueopt.valueoptimpl.OptMacrosCompat._
 
   def findLhs(c: Context): c.Tree = {
     import c.universe._

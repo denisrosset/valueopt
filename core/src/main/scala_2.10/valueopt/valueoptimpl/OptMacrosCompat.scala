@@ -1,23 +1,23 @@
-package valueopt
+package valueopt.valueoptimpl
 
 object OptMacrosCompat {
 
-  type Context = scala.reflect.macros.whitebox.Context
+  type Context = scala.reflect.macros.Context
 
   def freshTermName[C <: Context](c: C)(s: String) =
-    c.universe.TermName(c.freshName(s))
+    c.universe.newTermName(c.fresh(s))
 
   def termName[C <: Context](c: C)(s: String) =
-    c.universe.TermName(s)
+    c.universe.newTermName(s)
 
   def typeCheck[C <: Context](c: C)(t: c.Tree) =
-    c.typecheck(t)
+    c.typeCheck(t)
 
   def resetLocalAttrs[C <: Context](c: C)(t: c.Tree) =
-    c.untypecheck(t)
+    c.resetLocalAttrs(t)
 
   def setOrig[C <: Context](c: C)(tt: c.universe.TypeTree, t: c.Tree) =
-    c.universe.internal.setOriginal(tt, t)
+    tt.setOriginal(t)
 
   def predef[C <: Context](c: C): c.Tree = {
     import c.universe._

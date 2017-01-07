@@ -1,8 +1,14 @@
-package valueopt
+package valueopt.valueoptimpl
 
-import valueopt.valueoptimpl.OptMacros
+import valueopt.Opt
 
-class OptOps[A](val lhs: Opt[A]) extends AnyVal {
+final class OptOps[A](val lhs: Opt[A]) extends AnyVal {
+  @inline def isEmpty: Boolean = lhs.isInstanceOf[OptNoneImpl]
+  @inline def get: A = (lhs: Any) match {
+    case none: OptWrappedNone => none.unwrap.asInstanceOf[A]
+    case _: OptNoneImpl => throw new NoSuchElementException("OptNone.get")
+    case _ => lhs.asInstanceOf[A]
+  }
   def filter(f: A => Boolean): Opt[A] = macro OptMacros.filter[A]
   def filterNot(f: A => Boolean): Opt[A] = macro OptMacros.filterNot[A]
   def withFilter(f: A => Boolean): Opt[A] = macro OptMacros.filter[A]
